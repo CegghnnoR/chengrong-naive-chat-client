@@ -3,10 +3,7 @@ package org.chengrong.naive.chat.client.socket;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import org.chengrong.naive.chat.client.application.UIService;
-import org.chengrong.naive.chat.client.socket.handler.AddFriendHandler;
-import org.chengrong.naive.chat.client.socket.handler.LoginHandler;
-import org.chengrong.naive.chat.client.socket.handler.SearchFriendHandler;
-import org.chengrong.naive.chat.client.socket.handler.TalkNoticeHandler;
+import org.chengrong.naive.chat.client.socket.handler.*;
 import org.chengrong.naive.chat.codec.ObjDecoder;
 import org.chengrong.naive.chat.codec.ObjEncoder;
 
@@ -26,6 +23,8 @@ public class MyChannelInitializer extends ChannelInitializer<SocketChannel> {
         ch.pipeline().addLast(new SearchFriendHandler(uiService));
         ch.pipeline().addLast(new AddFriendHandler(uiService));
         ch.pipeline().addLast(new TalkNoticeHandler(uiService));
+        ch.pipeline().addLast(new MsgHandler(uiService));
+        ch.pipeline().addLast(new MsgGroupHandler(uiService));
         // 对象传输处理[编码]
         ch.pipeline().addLast(new ObjEncoder());
     }

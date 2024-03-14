@@ -6,6 +6,8 @@ import javafx.scene.layout.Pane;
 import org.chengrong.naive.chat.client.infrastructure.util.BeanUtil;
 import org.chengrong.naive.chat.protocol.friend.AddFriendRequest;
 import org.chengrong.naive.chat.protocol.friend.SearchFriendRequest;
+import org.chengrong.naive.chat.protocol.msg.MsgGroupRequest;
+import org.chengrong.naive.chat.protocol.msg.MsgRequest;
 import org.chengrong.naive.chat.protocol.talk.DelTalkRequest;
 import org.chengrong.naive.chat.protocol.talk.TalkNoticeRequest;
 import org.itstack.naive.chat.ui.view.chat.IChatEvent;
@@ -25,7 +27,14 @@ public class ChatEvent implements IChatEvent {
 
     @Override
     public void doSendMsg(String userId, String talkId, Integer talkType, String msg, Integer msgType, Date msgDate) {
-
+        Channel channel = BeanUtil.getBean("channel", Channel.class);
+        if (talkType == 0) {
+            // 好友
+            channel.writeAndFlush(new MsgRequest(userId, talkId, msg, msgType, msgDate));
+        } else if (talkType == 1) {
+            // 群组
+            channel.writeAndFlush(new MsgGroupRequest(talkId, userId, msg, msgType, msgDate));
+        }
     }
 
     @Override
