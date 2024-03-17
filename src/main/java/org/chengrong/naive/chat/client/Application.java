@@ -5,7 +5,9 @@ import javafx.stage.Stage;
 import org.chengrong.naive.chat.client.application.UIService;
 import org.chengrong.naive.chat.client.event.ChatEvent;
 import org.chengrong.naive.chat.client.event.LoginEvent;
+import org.chengrong.naive.chat.client.infrastructure.util.CacheUtil;
 import org.chengrong.naive.chat.client.socket.NettyClient;
+import org.chengrong.naive.chat.protocol.login.ReconnectRequest;
 import org.itstack.naive.chat.ui.view.chat.ChatController;
 import org.itstack.naive.chat.ui.view.chat.IChatMethod;
 import org.itstack.naive.chat.ui.view.login.ILoginMethod;
@@ -13,10 +15,7 @@ import org.itstack.naive.chat.ui.view.login.LoginController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
 
 public class Application extends javafx.application.Application {
     Logger logger = LoggerFactory.getLogger(Application.class);
@@ -50,6 +49,23 @@ public class Application extends javafx.application.Application {
         }
 
         logger.info("NettyClient连接服务完成 {}", channel.localAddress());
+
+        //Channel 状态定时巡检；2秒后每5s执行一次
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            while (!nettyClient.isActive()) {
+                System.out.println("通信管道巡检：通信管道状态 " + nettyClient.isActive());
+                try {
+                    System.out.println("通信管道巡检：断线重连【begin】");
+                    Channel freshChannel = executorService.submit(nettyClient).get();
+                    if (CacheUtil.userId == null) {
+                        continue;
+                    }
+                    freshChannel.writeAndFlush(new ReconnectRequest(CacheUtil.userId));
+                } catch (InterruptedException | ExecutionException e) {
+                    System.out.println("通信管道巡检：断线重连[Error]");
+                }
+            }
+        }, 3, 5, TimeUnit.SECONDS);
     }
 
     public static void main(String[] args) {

@@ -18,7 +18,6 @@ public class MsgGroupHandler extends SimpleChannelInboundHandler<MsgGroupRespons
     protected void channelRead0(ChannelHandlerContext ctx, MsgGroupResponse msg) throws Exception {
         IChatMethod chat = uiService.getChat();
         Platform.runLater(() -> {
-            System.out.println("这里：" + JSON.toJSONString(msg));
             System.out.println(msg.getMsgType());
             chat.addTalkMsgGroupLeft(msg.getTalkId(), msg.getUserId(),
                     msg.getUserNickName(), msg.getUserHead(), msg.getMsg(),
